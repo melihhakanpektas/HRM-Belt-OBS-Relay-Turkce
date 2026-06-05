@@ -84,21 +84,27 @@ npm install
 
 ### 🍎 macOS Başlangıç
 
+1. Proje klasörüne git
+2. `start.sh` dosyasına çift tıkla
+3. Bitti! Script otomatik olarak her şeyi yapacak
+
+Veya Terminal'de:
 ```bash
 cd ~/Desktop/hrm-belt
 ./start.sh
 ```
-
-Bitti! Script otomatik olarak her şeyi yapacak.
 
 ### 🐧 Linux Başlangıç
 
+1. Dosya yöneticisinde proje klasörüne git
+2. `start.sh` dosyasına çift tıkla
+3. Bitti! Script otomatik olarak her şeyi yapacak
+
+Veya Terminal'de:
 ```bash
 cd ~/Desktop/hrm-belt
 ./start.sh
 ```
-
-Bitti! Script otomatik olarak her şeyi yapacak.
 
 > **Not:** Node.js yüklü değilse, paket yöneticinden yükle: `sudo apt install nodejs npm` (Ubuntu/Debian), `sudo dnf install nodejs npm` (Fedora), vb.
 
