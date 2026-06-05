@@ -89,6 +89,7 @@ npm install
 3. Bitti! Script otomatik olarak her şeyi yapacak
 
 Veya Terminal'de:
+
 ```bash
 cd ~/Desktop/hrm-belt
 ./start.sh
@@ -101,6 +102,7 @@ cd ~/Desktop/hrm-belt
 3. Bitti! Script otomatik olarak her şeyi yapacak
 
 Veya Terminal'de:
+
 ```bash
 cd ~/Desktop/hrm-belt
 ./start.sh
@@ -151,9 +153,11 @@ hrm-belt/
 ## Hata Giderme
 
 **Port 8765 zaten kullanımda?**
+
 - Sunucuyu kapat (Ctrl+C) veya start scriptini kapatıp tekrar başlat
 
 **Bluetooth cihazı bağlanmıyor?**
+
 - Chrome/Edge en güncel sürüme güncelle
 - Cihazın Bluetooth'u açık ve yakında olduğundan emin ol
 
