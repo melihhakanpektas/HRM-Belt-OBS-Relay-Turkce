@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>HRM Controller</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #0b1020;
+        color: white;
+        font-family:
+          Segoe UI,
+          Arial,
+          sans-serif;
+        display: grid;
+        place-items: center;
+      }
+
+      .card {
+        width: 460px;
+        padding: 28px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+      }
+
+      h1 {
+        margin: 0 0 18px;
+        font-size: 28px;
+      }
+
+      .bpm {
+        font-size: 88px;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        margin: 18px 0 4px;
+      }
+
+      .status {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.72);
+        margin-bottom: 18px;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 18px;
+        font-weight: 700;
+        cursor: pointer;
+        background: white;
+        color: #111827;
+      }
+
+      button.secondary {
+        background: rgba(255, 255, 255, 0.14);
+        color: white;
+      }
+
+      label {
+        display: block;
+        margin-top: 16px;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 6px;
+        padding: 11px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(0, 0, 0, 0.25);
+        color: white;
+        outline: none;
+      }
+
+      pre {
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.28);
+        color: rgba(255, 255, 255, 0.72);
+        max-height: 170px;
+        overflow: auto;
+        font-size: 12px;
+      }
+
+      .active-time {
+        font-size: 17px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.85);
+        margin: 6px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>HRM Controller</h1>
+
+      <div id="status" class="status">Relay bağlantısı bekleniyor...</div>
+      <div id="bpm" class="bpm">--</div>
+      <div>BPM</div>
+      <div id="activeTimeDisplay" class="active-time">Bugün: 00:00 / 30 dk</div>
+
+      <label>Cihaz adı</label>
+      <input id="deviceNameInput" value="HRM Belt 55266" />
+
+      <label>Minimum hedef BPM</label>
+      <input id="minBpmInput" type="number" value="100" />
+
+      <label>Maksimum hedef BPM</label>
+      <input id="maxBpmInput" type="number" value="125" />
+
+      <label>Uyarı sesi sıklığı (saniye, 0 = kapalı)</label>
+      <input id="alertIntervalInput" type="number" value="10" min="0" />
+
+      <label>Ses seviyesi (%)</label>
+      <input id="alertVolumeInput" type="number" value="150" min="1" max="500" />
+
+      <label>Kalp atışı ses seviyesi (%)</label>
+      <input id="heartbeatVolumeInput" type="number" value="22" min="0" max="200" />
+
+      <label>Günlük dakika hedefi</label>
+      <input id="dailyGoalInput" type="number" value="30" min="1" />
+
+      <div class="row">
+        <button id="connectBtn">Bluetooth Bağlan</button>
+        <button id="disconnectBtn" class="secondary">Kes</button>
+        <button id="openOverlayBtn" class="secondary">OBS Overlay Aç</button>
+      </div>
+
+      <pre id="log"></pre>
+    </div>
+
+    <script>
+      const WS_URL = "ws://localhost:8765";
+
+      let ws = null;
+      let device = null;
+      let characteristic = null;
+      let manualDisconnect = false;
+      let reconnectTimer = null;
+
+      const samples = [];
+
+      const bpmEl = document.getElementById("bpm");
+      const statusEl = document.getElementById("status");
+      const logEl = document.getElementById("log");
+
+      const deviceNameInput = document.getElementById("deviceNameInput");
+      const minBpmInput = document.getElementById("minBpmInput");
+      const maxBpmInput = document.getElementById("maxBpmInput");
+      const alertIntervalInput = document.getElementById("alertIntervalInput");
+      const alertVolumeInput = document.getElementById("alertVolumeInput");
+      const heartbeatVolumeInput = document.getElementById("heartbeatVolumeInput");
+      const dailyGoalInput = document.getElementById("dailyGoalInput");
+      const activeTimeEl = document.getElementById("activeTimeDisplay");
+
+      function log(message) {
+        const line = `[${new Date().toLocaleTimeString()}] ${message}`;
+        logEl.textContent += line + "\n";
+        logEl.scrollTop = logEl.scrollHeight;
+        console.log(message);
+      }
+
+      function getSettings() {
+        return {
+          deviceName: deviceNameInput.value.trim(),
+          minBpm: Number(minBpmInput.value),
+          maxBpm: Number(maxBpmInput.value),
+          alertInterval: Math.max(0, Number(alertIntervalInput.value)),
+          alertVolume: Math.max(1, Number(alertVolumeInput.value)),
+          heartbeatVolume: Math.max(0, Number(heartbeatVolumeInput.value)),
+          dailyGoal: Math.max(1, Number(dailyGoalInput.value)),
+        };
+      }
+
+      // --- Günlük aktif süre takibi ---
+      let today = new Date().toISOString().slice(0, 10);
+      let activeSeconds = Number(localStorage.getItem(`hrm-daily-${today}`) || 0);
+      let currentBpm = null;
+
+      function getTodayDate() {
+        return new Date().toISOString().slice(0, 10);
+      }
+
+      function checkDateChange() {
+        const newDate = getTodayDate();
+        if (newDate !== today) {
+          // Gün değişti, yeni güne geç
+          today = newDate;
+          activeSeconds = Number(localStorage.getItem(`hrm-daily-${today}`) || 0);
+          updateActiveTimeDisplay();
+          log(`Yeni güne geçildi: ${today}`);
+        }
+      }
+
+      function formatTime(totalSeconds) {
+        const m = Math.floor(totalSeconds / 60)
+          .toString()
+          .padStart(2, "0");
+        const s = (totalSeconds % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+      }
+
+      function loadSettings() {
+        const saved = JSON.parse(localStorage.getItem("hrm-settings") || "{}");
+        if (saved.deviceName != null) deviceNameInput.value = saved.deviceName;
+        if (saved.minBpm != null) minBpmInput.value = saved.minBpm;
+        if (saved.maxBpm != null) maxBpmInput.value = saved.maxBpm;
+        if (saved.alertInterval != null) alertIntervalInput.value = saved.alertInterval;
+        if (saved.alertVolume != null) alertVolumeInput.value = saved.alertVolume;
+        if (saved.heartbeatVolume != null) heartbeatVolumeInput.value = saved.heartbeatVolume;
+        if (saved.dailyGoal != null) dailyGoalInput.value = saved.dailyGoal;
+      }
+
+      function saveSettings() {
+        localStorage.setItem("hrm-settings", JSON.stringify(getSettings()));
+      }
+
+      function updateActiveTimeDisplay() {
+        const settings = getSettings();
+        const goalSecs = settings.dailyGoal * 60;
+        const done = activeSeconds >= goalSecs;
+        activeTimeEl.textContent = `Bugün: ${formatTime(activeSeconds)} / ${settings.dailyGoal} dk`;
+        activeTimeEl.style.color = done ? "#31e981" : "rgba(255,255,255,0.85)";
+      }
+
+      setInterval(() => {
+        checkDateChange();
+        if (currentBpm !== null && currentBpm >= getSettings().minBpm) {
+          activeSeconds++;
+          localStorage.setItem(`hrm-daily-${today}`, activeSeconds);
+          updateActiveTimeDisplay();
+        }
+      }, 1000);
+
+      function connectRelay() {
+        ws = new WebSocket(WS_URL);
+
+        ws.addEventListener("open", () => {
+          log("WebSocket relay bağlı.");
+          statusEl.textContent = "Relay bağlı. Bluetooth bağlantısı bekleniyor.";
+          publishState({ connected: false, bpm: null });
+        });
+
+        ws.addEventListener("close", () => {
+          log("WebSocket relay koptu. Tekrar deneniyor...");
+          statusEl.textContent = "Relay koptu. server.js çalışıyor mu?";
+          setTimeout(connectRelay, 1500);
+        });
+
+        ws.addEventListener("error", () => {
+          statusEl.textContent = "Relay hatası. npm start çalışıyor mu?";
+        });
+      }
+
+      function publishState(extra) {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+        const settings = getSettings();
+
+        ws.send(
+          JSON.stringify({
+            type: "state",
+            connected: Boolean(device && device.gatt && device.gatt.connected),
+            deviceName: settings.deviceName,
+            minBpm: settings.minBpm,
+            maxBpm: settings.maxBpm,
+            alertInterval: settings.alertInterval,
+            alertVolume: settings.alertVolume,
+            heartbeatVolume: settings.heartbeatVolume,
+            dailyGoal: settings.dailyGoal,
+            activeSeconds,
+            ...extra,
+            timestamp: Date.now(),
+          }),
+        );
+      }
+
+      function parseHeartRate(value) {
+        const flags = value.getUint8(0);
+        const is16Bit = flags & 0x01;
+
+        return is16Bit ? value.getUint16(1, true) : value.getUint8(1);
+      }
+
+      function smoothBpm(rawBpm) {
+        samples.push(rawBpm);
+
+        while (samples.length > 6) {
+          samples.shift();
+        }
+
+        const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
+        return Math.round(avg);
+      }
+
+      function onHeartRate(event) {
+        const rawBpm = parseHeartRate(event.target.value);
+        const bpm = smoothBpm(rawBpm);
+
+        currentBpm = bpm;
+        bpmEl.textContent = bpm;
+
+        publishState({
+          type: "bpm",
+          connected: true,
+          bpm,
+          rawBpm,
+        });
+      }
+
+      async function connectToDevice(selectedDevice) {
+        clearTimeout(reconnectTimer);
+
+        device = selectedDevice;
+
+        device.removeEventListener("gattserverdisconnected", onDisconnected);
+        device.addEventListener("gattserverdisconnected", onDisconnected);
+
+        statusEl.textContent = "Bluetooth bağlanıyor...";
+        log("Bluetooth GATT bağlanıyor...");
+
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService("heart_rate");
+
+        characteristic = await service.getCharacteristic("heart_rate_measurement");
+
+        characteristic.removeEventListener("characteristicvaluechanged", onHeartRate);
+        characteristic.addEventListener("characteristicvaluechanged", onHeartRate);
+
+        await characteristic.startNotifications();
+
+        statusEl.textContent = `Bağlı: ${device.name || "HRM"}`;
+        log(`Bluetooth bağlı: ${device.name || "HRM"}`);
+
+        publishState({
+          connected: true,
+          bpm: null,
+          rawBpm: null,
+        });
+      }
+
+      function onDisconnected() {
+        statusEl.textContent = "Bluetooth bağlantısı koptu.";
+        bpmEl.textContent = "--";
+        characteristic = null;
+        currentBpm = null;
+
+        publishState({
+          connected: false,
+          bpm: null,
+          rawBpm: null,
+        });
+
+        if (!manualDisconnect) {
+          scheduleReconnect();
+        }
+      }
+
+      function scheduleReconnect() {
+        clearTimeout(reconnectTimer);
+
+        reconnectTimer = setTimeout(async () => {
+          try {
+            statusEl.textContent = "Bluetooth tekrar bağlanıyor...";
+            log("Bluetooth tekrar bağlanma deneniyor...");
+
+            if (device) {
+              await connectToDevice(device);
+              return;
+            }
+
+            await reconnectKnownDevice();
+          } catch (err) {
+            log("Tekrar bağlanamadı: " + err.message);
+            scheduleReconnect();
+          }
+        }, 2500);
+      }
+
+      async function reconnectKnownDevice() {
+        if (!navigator.bluetooth.getDevices) {
+          throw new Error("navigator.bluetooth.getDevices desteklenmiyor.");
+        }
+
+        const settings = getSettings();
+        const devices = await navigator.bluetooth.getDevices();
+        const known = devices.find((d) => d.name === settings.deviceName);
+
+        if (!known) {
+          throw new Error("Önceden izin verilmiş cihaz yok.");
+        }
+
+        await connectToDevice(known);
+      }
+
+      async function requestAndConnect() {
+        if (!navigator.bluetooth) {
+          alert("Web Bluetooth desteklenmiyor. Chrome veya Edge kullan.");
+          return;
+        }
+
+        manualDisconnect = false;
+
+        const settings = getSettings();
+
+        log("Cihaz seçimi açılıyor...");
+
+        const selectedDevice = await navigator.bluetooth.requestDevice({
+          filters: [{ name: settings.deviceName }, { services: ["heart_rate"] }],
+          optionalServices: ["heart_rate", "battery_service"],
+        });
+
+        await connectToDevice(selectedDevice);
+      }
+
+      async function disconnectDevice() {
+        manualDisconnect = true;
+        clearTimeout(reconnectTimer);
+
+        if (device && device.gatt && device.gatt.connected) {
+          device.gatt.disconnect();
+        }
+
+        bpmEl.textContent = "--";
+        statusEl.textContent = "Bluetooth kesildi.";
+
+        publishState({
+          connected: false,
+          bpm: null,
+          rawBpm: null,
+        });
+      }
+
+      document.getElementById("connectBtn").addEventListener("click", async () => {
+        try {
+          await requestAndConnect();
+        } catch (err) {
+          log("Bağlantı hatası: " + err.message);
+          statusEl.textContent = "Bluetooth bağlanamadı.";
+        }
+      });
+
+      document.getElementById("disconnectBtn").addEventListener("click", disconnectDevice);
+
+      document.getElementById("openOverlayBtn").addEventListener("click", () => {
+        try {
+          const overlayUrl = new URL("overlay.html", window.location.href).href;
+          window.open(overlayUrl, "_blank");
+        } catch (err) {
+          log("Overlay açılamadı: " + (err && err.message ? err.message : err));
+        }
+      });
+
+      minBpmInput.addEventListener("input", () => {
+        saveSettings();
+        publishState({});
+      });
+      maxBpmInput.addEventListener("input", () => {
+        saveSettings();
+        publishState({});
+      });
+      deviceNameInput.addEventListener("input", () => {
+        saveSettings();
+        publishState({});
+      });
+      alertIntervalInput.addEventListener("input", () => {
+        saveSettings();
+        publishState({});
+      });
+      alertVolumeInput.addEventListener("input", () => {
+        saveSettings();
+        publishState({});
+      });
+      heartbeatVolumeInput.addEventListener("input", () => {
+        saveSettings();
+        publishState({});
+      });
+      dailyGoalInput.addEventListener("input", () => {
+        saveSettings();
+        publishState({});
+        updateActiveTimeDisplay();
+      });
+
+      loadSettings();
+      updateActiveTimeDisplay();
+      connectRelay();
+
+      // Daha önce izin verilmiş cihaz varsa sayfa açıldığında bağlanmayı deneyebilir.
+      setTimeout(async () => {
+        try {
+          await reconnectKnownDevice();
+        } catch (_) {
+          // İlk kullanımda normal.
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>

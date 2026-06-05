@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>HRM Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 32px;
+      }
+
+      #bpm {
+        font-size: 72px;
+        font-weight: bold;
+        margin-top: 24px;
+      }
+
+      button {
+        font-size: 18px;
+        padding: 12px 20px;
+      }
+
+      pre {
+        background: #eee;
+        padding: 16px;
+        margin-top: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="connect">Nabız sensörüne bağlan</button>
+    <div id="bpm">-- BPM</div>
+    <pre id="log"></pre>
+
+    <script>
+      const bpmEl = document.getElementById("bpm");
+      const logEl = document.getElementById("log");
+
+      function log(message) {
+        logEl.textContent += message + "\n";
+      }
+
+      function parseHeartRate(value) {
+        const flags = value.getUint8(0);
+        const is16Bit = flags & 0x01;
+
+        if (is16Bit) {
+          return value.getUint16(1, true);
+        }
+
+        return value.getUint8(1);
+      }
+
+      document.getElementById("connect").addEventListener("click", async () => {
+        try {
+          log("Cihaz aranıyor...");
+
+          const device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: ["heart_rate"] }],
+            optionalServices: ["battery_service"],
+          });
+
+          log("Cihaz bulundu: " + (device.name || "İsimsiz cihaz"));
+
+          device.addEventListener("gattserverdisconnected", () => {
+            log("Bağlantı koptu.");
+            bpmEl.textContent = "-- BPM";
+          });
+
+          const server = await device.gatt.connect();
+          log("GATT bağlantısı kuruldu.");
+
+          const service = await server.getPrimaryService("heart_rate");
+          log("Heart Rate Service bulundu.");
+
+          const characteristic = await service.getCharacteristic("heart_rate_measurement");
+          log("Heart Rate Measurement characteristic bulundu.");
+
+          await characteristic.startNotifications();
+          log("Canlı veri dinleniyor...");
+
+          characteristic.addEventListener("characteristicvaluechanged", (event) => {
+            const bpm = parseHeartRate(event.target.value);
+            bpmEl.textContent = bpm + " BPM";
+            log("BPM: " + bpm);
+
+            if (bpm < 100) {
+              document.body.style.background = "#f3f3f3";
+            } else if (bpm <= 140) {
+              document.body.style.background = "#d9ffd9";
+            } else {
+              document.body.style.background = "#ffd9d9";
+              // Basit sesli uyarı
+              new AudioContext().resume().catch(() => {});
+            }
+          });
+        } catch (error) {
+          log("Hata: " + error.message);
+          console.error(error);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>HRM OBS Overlay</title>
+
+    <style>
+      :root {
+        --ok: #31e981;
+        --low: #4da3ff;
+        --high: #ff4d6d;
+        --idle: rgba(255, 255, 255, 0.66);
+        --glass: rgba(10, 14, 22, 0.62);
+        --stroke: rgba(255, 255, 255, 0.15);
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: transparent;
+        font-family:
+          Inter,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+      }
+
+      .overlay {
+        width: 1500px;
+        height: 875px;
+        padding: 90px 100px;
+        border-radius: 100px;
+        box-sizing: border-box;
+        color: white;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(20, 25, 37, 1),
+          rgba(5, 7, 12, 0.99) 80%
+        );
+        border: 5px solid var(--stroke);
+        box-shadow: inset 0 5px 0 rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(90px);
+        -webkit-backdrop-filter: blur(90px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .main {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 70px;
+      }
+
+      .bpm-wrap {
+        display: flex;
+        align-items: flex-end;
+        gap: 50px;
+      }
+
+      @keyframes bpm-pulse {
+        0% {
+          transform: scale(1);
+        }
+        35% {
+          transform: scale(1.22);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .bpm {
+        font-size: 430px;
+        line-height: 0.92;
+        font-weight: 900;
+        letter-spacing: -0.075em;
+        font-variant-numeric: tabular-nums;
+        color: var(--idle);
+        transition: color 180ms ease;
+        text-shadow: 0 60px 170px rgba(0, 0, 0, 0.36);
+        display: inline-block;
+      }
+
+      .bpm.pulse {
+        animation: bpm-pulse 0.32s ease-out;
+      }
+
+      @keyframes heart-beat {
+        0% {
+          transform: scale(1);
+        }
+        30% {
+          transform: scale(1.45);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .heart-icon {
+        font-size: 110px;
+        line-height: 1;
+        display: inline-block;
+        color: #ff4d6d;
+        filter: drop-shadow(0 0 30px rgba(255, 77, 109, 0.55));
+        opacity: 0.45;
+        transition: opacity 180ms ease;
+        margin-bottom: 30px;
+      }
+
+      .heart-icon.beat {
+        animation: heart-beat 0.3s ease-out;
+        opacity: 1;
+      }
+
+      .ok .heart-icon {
+        color: var(--ok);
+        filter: drop-shadow(0 0 30px rgba(49, 233, 129, 0.55));
+      }
+      .low .heart-icon {
+        color: var(--low);
+        filter: drop-shadow(0 0 30px rgba(77, 163, 255, 0.55));
+      }
+      .high .heart-icon {
+        color: var(--high);
+        filter: drop-shadow(0 0 30px rgba(255, 77, 109, 0.55));
+      }
+
+      .unit {
+        font-size: 19px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.62);
+        margin-bottom: 8px;
+      }
+
+      .target {
+        text-align: right;
+        margin-bottom: 50px;
+      }
+
+      .target-title {
+        font-size: 55px;
+        color: rgba(255, 255, 255, 0.55);
+        font-weight: 800;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+
+      .target-value {
+        margin-top: 20px;
+        font-size: 90px;
+        font-weight: 850;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .low .bpm {
+        color: var(--low);
+      }
+      .ok .bpm {
+        color: var(--ok);
+      }
+      .high .bpm {
+        color: var(--high);
+      }
+      .idle .bpm {
+        color: var(--idle);
+      }
+
+      .stale {
+        opacity: 0.55;
+        filter: grayscale(0.35);
+      }
+
+      .time-row {
+        margin-top: 70px;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 30px;
+        font-size: 65px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.5);
+        border-top: 5px solid rgba(255, 255, 255, 0.1);
+        padding-top: 60px;
+      }
+
+      .time-val {
+        font-size: 90px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.88);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .goal-reached .time-val {
+        color: var(--ok);
+      }
+    </style>
+  </head>
+
+  <body class="idle">
+    <div id="overlay" class="overlay">
+      <div class="main">
+        <div class="bpm-wrap">
+          <div id="bpm" class="bpm">--</div>
+          <span id="heartIcon" class="heart-icon">&#9829;</span>
+        </div>
+
+        <div class="target">
+          <div class="target-title">Target</div>
+          <div id="target" class="target-value">100–125</div>
+        </div>
+      </div>
+
+      <div class="time-row">
+        <span id="activeTime" class="time-val">00:00</span>
+        <span>/</span>
+        <span id="goalText">30 dk</span>
+      </div>
+    </div>
+
+    <script>
+      const WS_URL = "ws://localhost:8765";
+
+      const overlay = document.getElementById("overlay");
+      const bpmEl = document.getElementById("bpm");
+      const heartIconEl = document.getElementById("heartIcon");
+      const targetEl = document.getElementById("target");
+      const activeTimeEl = document.getElementById("activeTime");
+      const goalTextEl = document.getElementById("goalText");
+
+      let minBpm = 100;
+      let maxBpm = 125;
+      let alertInterval = 10;
+      let alertVolume = 1.5;
+      let dailyGoal = 30;
+      let activeSeconds = 0;
+      let lastAlertAt = 0;
+      let currentZone = "idle";
+      let lastMessageAt = 0;
+      let currentBpmValue = 0;
+      let heartbeatRunning = false;
+      let heartbeatVolume = 0.22;
+
+      function formatTime(totalSeconds) {
+        const m = Math.floor(totalSeconds / 60)
+          .toString()
+          .padStart(2, "0");
+        const s = (totalSeconds % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+      }
+
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      function pulseBpm() {
+        bpmEl.classList.remove("pulse");
+        void bpmEl.offsetWidth;
+        bpmEl.classList.add("pulse");
+        bpmEl.addEventListener("animationend", () => bpmEl.classList.remove("pulse"), {
+          once: true,
+        });
+      }
+
+      function playBeep(frequency, duration = 0.18, volume = 0.5) {
+        if (volume <= 0) return;
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + duration);
+        pulseBpm();
+      }
+
+      function playHeartbeatTick() {
+        if (heartbeatVolume <= 0) {
+          heartIconEl.classList.remove("beat");
+          void heartIconEl.offsetWidth;
+          heartIconEl.classList.add("beat");
+          heartIconEl.addEventListener("animationend", () => heartIconEl.classList.remove("beat"), {
+            once: true,
+          });
+          return;
+        }
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 120;
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(70, t);
+        osc.frequency.exponentialRampToValueAtTime(28, t + 0.12);
+        gain.gain.setValueAtTime(0.0, t);
+        gain.gain.linearRampToValueAtTime(heartbeatVolume, t + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.start(t);
+        osc.stop(t + 0.18);
+        heartIconEl.classList.remove("beat");
+        void heartIconEl.offsetWidth;
+        heartIconEl.classList.add("beat");
+        heartIconEl.addEventListener("animationend", () => heartIconEl.classList.remove("beat"), {
+          once: true,
+        });
+      }
+
+      function heartbeatLoop() {
+        if (!currentBpmValue) {
+          heartbeatRunning = false;
+          return;
+        }
+        playHeartbeatTick();
+        const interval = (60 / currentBpmValue) * 1000;
+        setTimeout(heartbeatLoop, interval);
+      }
+
+      function triggerAlertIfNeeded() {
+        if (currentZone === "idle" || currentZone === "ok") return;
+        if (alertInterval === 0) return;
+        const now = Date.now();
+        if (now - lastAlertAt < alertInterval * 1000) return;
+        lastAlertAt = now;
+        if (currentZone === "low") {
+          playBeep(330, 0.18, alertVolume);
+          setTimeout(() => playBeep(330, 0.18, alertVolume), 280);
+        } else if (currentZone === "high") {
+          playBeep(880, 0.18, alertVolume);
+          setTimeout(() => playBeep(660, 0.18, alertVolume), 280);
+        }
+      }
+
+      function setConnectionState(connected) {
+        if (!connected) {
+          currentBpmValue = 0;
+          heartbeatRunning = false;
+          bpmEl.textContent = "--";
+          setBpmState(null);
+        }
+      }
+
+      function setBpmState(bpm) {
+        document.body.classList.remove("low", "ok", "high", "idle");
+
+        if (!bpm) {
+          currentZone = "idle";
+          document.body.classList.add("idle");
+          return;
+        }
+
+        if (bpm < minBpm) {
+          currentZone = "low";
+          document.body.classList.add("low");
+        } else if (bpm > maxBpm) {
+          currentZone = "high";
+          document.body.classList.add("high");
+        } else {
+          currentZone = "ok";
+          document.body.classList.add("ok");
+        }
+
+        triggerAlertIfNeeded();
+      }
+
+      function applyData(data) {
+        lastMessageAt = Date.now();
+        overlay.classList.remove("stale");
+
+        if (typeof data.minBpm === "number") minBpm = data.minBpm;
+        if (typeof data.maxBpm === "number") maxBpm = data.maxBpm;
+        if (typeof data.alertInterval === "number") alertInterval = data.alertInterval;
+        if (typeof data.alertVolume === "number") alertVolume = data.alertVolume / 100;
+        if (typeof data.heartbeatVolume === "number") heartbeatVolume = data.heartbeatVolume / 100;
+        if (typeof data.dailyGoal === "number") dailyGoal = data.dailyGoal;
+        if (typeof data.activeSeconds === "number") activeSeconds = data.activeSeconds;
+
+        targetEl.textContent = `${minBpm}–${maxBpm}`;
+        activeTimeEl.textContent = formatTime(activeSeconds);
+        goalTextEl.textContent = `${dailyGoal} dk`;
+        overlay.classList.toggle("goal-reached", activeSeconds >= dailyGoal * 60);
+
+        if (data.connected && data.bpm) {
+          const wasIdle = !currentBpmValue;
+          currentBpmValue = data.bpm;
+          bpmEl.textContent = data.bpm;
+          setBpmState(data.bpm);
+          if (wasIdle && !heartbeatRunning) {
+            heartbeatRunning = true;
+            heartbeatLoop();
+          }
+        } else {
+          currentBpmValue = 0;
+          bpmEl.textContent = "--";
+          setBpmState(null);
+        }
+      }
+
+      function connectWs() {
+        const ws = new WebSocket(WS_URL);
+
+        ws.addEventListener("open", () => {});
+
+        ws.addEventListener("message", (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            applyData(data);
+          } catch (_) {}
+        });
+
+        ws.addEventListener("close", () => {
+          setConnectionState(false);
+          setTimeout(connectWs, 1500);
+        });
+
+        ws.addEventListener("error", () => {
+          setConnectionState(false);
+        });
+      }
+
+      setInterval(() => {
+        if (lastMessageAt && Date.now() - lastMessageAt > 5000) {
+          overlay.classList.add("stale");
+        }
+      }, 1000);
+
+      connectWs();
+    </script>
+  </body>
+</html>
