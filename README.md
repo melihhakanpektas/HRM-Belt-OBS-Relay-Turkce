@@ -4,11 +4,46 @@ Bluetooth Kalp Hızı (HR) Monitörü verilerini OBS'e entegre etmek için WebSo
 
 ## Özellikler
 
-- 📊 Bluetooth kalp hızı monitöründen BPM (Beats Per Minute) verisini okur
-- 🎮 Web tabanlı controller arayüzü
-- 📹 OBS Browser Source ile uyumlu overlay
-- 🔗 WebSocket ile gerçek zamanlı veri senkronizasyonu
-- 🌐 Türkçe arayüz
+### 📊 Bluetooth Kalp Hızı Entegrasyonu
+- Web Bluetooth API kullanarak cihazla doğrudan iletişim
+- BPM (Beats Per Minute) verilerini gerçek zamanlı olarak okur
+- Kalp atış hızı değişikliklerini anında algılar
+- Bluetooth Low Energy (BLE) cihazlarıyla uyumlu
+
+### 🎮 İnteraktif Web Controller
+- Modern, responsive tasarım
+- Kalp atış hızını anlık olarak görüntüler
+- Bir tuşla Bluetooth cihazına bağlan/bağlantıyı kes
+- Canlı günlük (log) paneli ile bağlantı durumunu takip et
+- Aktif monitörleme süresini göster
+- Toplam atış sayısını hesapla
+
+### 📹 OBS Broadcasting Overlay
+- 4K hazır overlay tasarımı (1500×875px)
+- Gerçek zamanlı BPM gösterimi büyük yazı ile
+- Dinamik renk değişimi: Normal (yeşil) → Düşük (mavi) → Yüksek (kırmızı)
+- Kalp atış animasyonu ile görsel feedback
+- Taşkın durum göstergesi
+- Profesyonel glass morphism tasarımı
+
+### 🔗 WebSocket Relay Mimarisi
+- Localhost üzerinde çalışan dedike relay sunucusu
+- Birden fazla istemci aynı anda bağlanabilir
+- Düşük latency (gecikme) ile veri iletimi
+- Otomatik hata handling ve yeniden bağlanma
+- State persistency - son durumu sakla ve yeni bağlananlar için aktar
+
+### 🌐 Türkçe Arayüz
+- Tüm UI metinleri Türkçe
+- Ülkeye özgü tasarım ve UX best practices
+- Kolay kurulum ve kullanım rehberi
+
+### ⚡ Performans & Güvenilirlik
+- Minimal bağımlılık (sadece `ws` kütüphanesi)
+- Hızlı başlangıç ve başlatma
+- Otomatik error recovery
+- Port çakışması tespit ve yönetimi
+- Kristal temiz console output ile debugging kolaylığı
 
 ## Kurulum
 
@@ -20,18 +55,21 @@ Bluetooth Kalp Hızı (HR) Monitörü verilerini OBS'e entegre etmek için WebSo
 ### Adımlar
 
 1. Depoyu klonla:
+
 ```bash
 git clone <repo-url>
 cd hrm-belt
 ```
 
 2. Bağımlılıkları yükle:
+
 ```bash
 cd hrm-obs
 npm install
 ```
 
 3. Sunucuyu başlat:
+
 ```bash
 # Windows
 start.bat
@@ -82,10 +120,12 @@ hrm-belt/
 ## Hata Giderme
 
 **Port 8765 zaten kullanımda?**
+
 - Önceki sunucuyı kapat: `start.bat` penceresini kapat veya Ctrl+C
 - Port kullanan işlemi kapat: `taskkill /PID <PID> /F`
 
 **Bluetooth cihazı algılanmıyor?**
+
 - Chrome/Edge en güncel versiyona güncelle
 - Cihazın Bluetooth'u açık olduğundan emin ol
 - Web Bluetooth API desteği için HTTPS veya localhost gerekli
