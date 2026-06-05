@@ -101,6 +101,36 @@
         color: rgba(255, 255, 255, 0.85);
         margin: 6px 0 0;
       }
+
+      .calories-display {
+        font-size: 16px;
+        font-weight: 600;
+        color: #ff6b4a;
+        margin: 12px 0 0;
+      }
+
+      .section-title {
+        margin-top: 24px;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 0.05em;
+      }
+
+      .param-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .param-row label {
+        margin-top: 12px;
+      }
+
+      .param-row input {
+        margin-top: 6px;
+      }
     </style>
   </head>
   <body>
@@ -111,8 +141,9 @@
       <div id="bpm" class="bpm">--</div>
       <div>BPM</div>
       <div id="activeTimeDisplay" class="active-time">Bugün: 00:00 / 30 dk</div>
+      <div id="caloriesDisplay" class="calories-display">Kalori: 0.00 kcal</div>
 
-      <label>Cihaz adı</label>
+      <div class="section-title">Genel Ayarlar</div>
       <input id="deviceNameInput" value="HRM Belt 55266" />
 
       <label>Minimum hedef BPM</label>
@@ -133,7 +164,80 @@
       <label>Günlük dakika hedefi</label>
       <input id="dailyGoalInput" type="number" value="30" min="1" />
 
-      <div class="row">
+      <div class="section-title">Kalori Hesaplama Parametreleri</div>
+
+      <div class="param-row">
+        <div>
+          <label>Cinsiyet</label>
+          <select id="sexInput" style="width: 100%; margin-top: 6px; padding: 11px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(0, 0, 0, 0.25); color: white;">
+            <option value="male">Erkek</option>
+            <option value="female">Kadın</option>
+          </select>
+        </div>
+        <div>
+          <label>Yaş</label>
+          <input id="ageInput" type="number" value="30" min="1" max="120" />
+        </div>
+      </div>
+
+      <div class="param-row">
+        <div>
+          <label>Kilo (kg)</label>
+          <input id="weightKgInput" type="number" value="75" min="10" step="0.1" />
+        </div>
+        <div>
+          <label>Boy (cm)</label>
+          <input id="heightCmInput" type="number" value="180" min="50" step="0.1" />
+        </div>
+      </div>
+
+      <div class="param-row">
+        <div>
+          <label>İstirahat Nabzı (BPM)</label>
+          <input id="restingBpmInput" type="number" value="" placeholder="Otomatik" />
+        </div>
+        <div>
+          <label>Maks Nabız (BPM)</label>
+          <input id="maxHeartRateInput" type="number" value="" placeholder="Otomatik" />
+        </div>
+      </div>
+
+      <div class="param-row">
+        <div>
+          <label>VO2 Max (ml/kg/min)</label>
+          <input id="vo2MaxInput" type="number" value="" placeholder="Otomatik" step="0.1" />
+        </div>
+        <div>
+          <label>Min Aktif BPM</label>
+          <input id="minActiveBpmInput" type="number" value="100" min="1" />
+        </div>
+      </div>
+
+      <div class="param-row">
+        <div>
+          <label>Min Geçerli BPM</label>
+          <input id="minValidBpmInput" type="number" value="40" min="1" />
+        </div>
+        <div>
+          <label>Max Geçerli BPM</label>
+          <input id="maxValidBpmInput" type="number" value="" placeholder="Otomatik" />
+        </div>
+      </div>
+
+      <div class="param-row">
+        <div>
+          <label>Düzeltme Faktörü</label>
+          <input id="correctionFactorInput" type="number" value="0.90" min="0.1" max="2" step="0.05" />
+        </div>
+        <div style="display: flex; align-items: flex-end;">
+          <label style="margin-bottom: 8px;">
+            <input id="subtractRestingInput" type="checkbox" checked style="width: auto; margin-top: 0; margin-right: 6px; vertical-align: middle;" />
+            İstirahat Kalori Çıkar
+          </label>
+        </div>
+      </div>
+
+      <div class="section-title">Bluetooth Ayarları</div>
         <button id="connectBtn">Bluetooth Bağlan</button>
         <button id="disconnectBtn" class="secondary">Kes</button>
         <button id="openOverlayBtn" class="secondary">OBS Overlay Aç</button>
@@ -143,6 +247,157 @@
     </div>
 
     <script>
+      // ===== Kalori Hesaplama Fonksiyonu =====
+      function calculateNetCaloriesPerSecond({
+        sex, // "male" | "female"
+        age,
+        weightKg,
+        heightCm,
+        bpm,
+
+        restingBpm = null,
+        maxHeartRate = null,
+        vo2Max = null,
+
+        minActiveBpm = 100,
+        minValidBpm = 40,
+        maxValidBpm = null,
+
+        correctionFactor = 0.90,
+        subtractRestingCalories = true,
+      }) {
+        if (sex !== "male" && sex !== "female") {
+          throw new Error("sex must be 'male' or 'female'");
+        }
+
+        if (!Number.isFinite(age) || age <= 0) {
+          throw new Error("age must be a positive number");
+        }
+
+        if (!Number.isFinite(weightKg) || weightKg <= 0) {
+          throw new Error("weightKg must be a positive number");
+        }
+
+        if (!Number.isFinite(heightCm) || heightCm <= 0) {
+          throw new Error("heightCm must be a positive number");
+        }
+
+        if (!Number.isFinite(bpm)) {
+          return 0;
+        }
+
+        if (!Number.isFinite(correctionFactor) || correctionFactor <= 0) {
+          throw new Error("correctionFactor must be a positive number");
+        }
+
+        const estimatedRestingBpm =
+          restingBpm ??
+          (sex === "male" ? 70 : 75);
+
+        if (!Number.isFinite(estimatedRestingBpm) || estimatedRestingBpm <= 0) {
+          throw new Error("restingBpm must be a positive number");
+        }
+
+        const estimatedMaxHeartRate =
+          maxHeartRate ??
+          (208 - (0.7 * age));
+
+        if (!Number.isFinite(estimatedMaxHeartRate) || estimatedMaxHeartRate <= 0) {
+          throw new Error("maxHeartRate must be a positive number");
+        }
+
+        const upperValidBpm =
+          maxValidBpm ??
+          Math.min(220, estimatedMaxHeartRate + 15);
+
+        if (!Number.isFinite(upperValidBpm) || upperValidBpm <= 0) {
+          throw new Error("maxValidBpm must be a positive number");
+        }
+
+        if (bpm < minValidBpm || bpm > upperValidBpm) {
+          return 0;
+        }
+
+        if (bpm < minActiveBpm) {
+          return 0;
+        }
+
+        const heartRateReserve = estimatedMaxHeartRate - estimatedRestingBpm;
+
+        if (heartRateReserve <= 0) {
+          return 0;
+        }
+
+        const intensityByHeartRateReserve =
+          (bpm - estimatedRestingBpm) / heartRateReserve;
+
+        const clampedIntensity =
+          Math.max(0, Math.min(1.2, intensityByHeartRateReserve));
+
+        const estimatedVo2Max =
+          vo2Max ??
+          (15.3 * (estimatedMaxHeartRate / estimatedRestingBpm));
+
+        const safeVo2Max =
+          Math.max(15, Math.min(70, estimatedVo2Max));
+
+        const bmr =
+          sex === "male"
+            ? (10 * weightKg) + (6.25 * heightCm) - (5 * age) + 5
+            : (10 * weightKg) + (6.25 * heightCm) - (5 * age) - 161;
+
+        let grossKcalPerMinute;
+
+        if (sex === "male") {
+          grossKcalPerMinute =
+            (
+              -95.7735 +
+              (0.634 * bpm) +
+              (0.404 * safeVo2Max) +
+              (0.394 * weightKg) +
+              (0.271 * age)
+            ) / 4.184;
+        } else {
+          grossKcalPerMinute =
+            (
+              -59.3954 +
+              (0.45 * bpm) +
+              (0.380 * safeVo2Max) +
+              (0.103 * weightKg) +
+              (0.274 * age)
+            ) / 4.184;
+        }
+
+        if (!Number.isFinite(grossKcalPerMinute) || grossKcalPerMinute <= 0) {
+          return 0;
+        }
+
+        const grossKcalPerSecond = grossKcalPerMinute / 60;
+        const restingKcalPerSecond = bmr / 86400;
+
+        let netKcalPerSecond = grossKcalPerSecond;
+
+        if (subtractRestingCalories) {
+          netKcalPerSecond -= restingKcalPerSecond;
+        }
+
+        if (netKcalPerSecond <= 0) {
+          return 0;
+        }
+
+        const intensityCorrection =
+          clampedIntensity < 0.25
+            ? 0.85
+            : clampedIntensity < 0.45
+              ? 0.90
+              : clampedIntensity < 0.70
+                ? 0.95
+                : 1.00;
+
+        return netKcalPerSecond * correctionFactor * intensityCorrection;
+      }
+
+      // ===== Global Ayarları =====
       const WS_URL = "ws://localhost:8765";
 
       let ws = null;
@@ -165,6 +420,21 @@
       const heartbeatVolumeInput = document.getElementById("heartbeatVolumeInput");
       const dailyGoalInput = document.getElementById("dailyGoalInput");
       const activeTimeEl = document.getElementById("activeTimeDisplay");
+      const caloriesEl = document.getElementById("caloriesDisplay");
+
+      // Kalori parametreleri
+      const sexInput = document.getElementById("sexInput");
+      const ageInput = document.getElementById("ageInput");
+      const weightKgInput = document.getElementById("weightKgInput");
+      const heightCmInput = document.getElementById("heightCmInput");
+      const restingBpmInput = document.getElementById("restingBpmInput");
+      const maxHeartRateInput = document.getElementById("maxHeartRateInput");
+      const vo2MaxInput = document.getElementById("vo2MaxInput");
+      const minActiveBpmInput = document.getElementById("minActiveBpmInput");
+      const minValidBpmInput = document.getElementById("minValidBpmInput");
+      const maxValidBpmInput = document.getElementById("maxValidBpmInput");
+      const correctionFactorInput = document.getElementById("correctionFactorInput");
+      const subtractRestingInput = document.getElementById("subtractRestingInput");
 
       function log(message) {
         const line = `[${new Date().toLocaleTimeString()}] ${message}`;
@@ -182,12 +452,26 @@
           alertVolume: Math.max(1, Number(alertVolumeInput.value)),
           heartbeatVolume: Math.max(0, Number(heartbeatVolumeInput.value)),
           dailyGoal: Math.max(1, Number(dailyGoalInput.value)),
+          // Kalori parametreleri
+          sex: sexInput.value,
+          age: Number(ageInput.value),
+          weightKg: Number(weightKgInput.value),
+          heightCm: Number(heightCmInput.value),
+          restingBpm: restingBpmInput.value ? Number(restingBpmInput.value) : null,
+          maxHeartRate: maxHeartRateInput.value ? Number(maxHeartRateInput.value) : null,
+          vo2Max: vo2MaxInput.value ? Number(vo2MaxInput.value) : null,
+          minActiveBpm: Number(minActiveBpmInput.value),
+          minValidBpm: Number(minValidBpmInput.value),
+          maxValidBpm: maxValidBpmInput.value ? Number(maxValidBpmInput.value) : null,
+          correctionFactor: Number(correctionFactorInput.value),
+          subtractRestingCalories: subtractRestingInput.checked,
         };
       }
 
       // --- Günlük aktif süre takibi ---
       let today = new Date().toISOString().slice(0, 10);
       let activeSeconds = Number(localStorage.getItem(`hrm-daily-${today}`) || 0);
+      let dailyCalories = Number(localStorage.getItem(`hrm-daily-calories-${today}`) || 0);
       let currentBpm = null;
 
       function getTodayDate() {
@@ -200,7 +484,9 @@
           // Gün değişti, yeni güne geç
           today = newDate;
           activeSeconds = Number(localStorage.getItem(`hrm-daily-${today}`) || 0);
+          dailyCalories = Number(localStorage.getItem(`hrm-daily-calories-${today}`) || 0);
           updateActiveTimeDisplay();
+          updateCaloriesDisplay();
           log(`Yeni güne geçildi: ${today}`);
         }
       }
@@ -222,6 +508,19 @@
         if (saved.alertVolume != null) alertVolumeInput.value = saved.alertVolume;
         if (saved.heartbeatVolume != null) heartbeatVolumeInput.value = saved.heartbeatVolume;
         if (saved.dailyGoal != null) dailyGoalInput.value = saved.dailyGoal;
+        // Kalori parametreleri
+        if (saved.sex != null) sexInput.value = saved.sex;
+        if (saved.age != null) ageInput.value = saved.age;
+        if (saved.weightKg != null) weightKgInput.value = saved.weightKg;
+        if (saved.heightCm != null) heightCmInput.value = saved.heightCm;
+        if (saved.restingBpm != null) restingBpmInput.value = saved.restingBpm;
+        if (saved.maxHeartRate != null) maxHeartRateInput.value = saved.maxHeartRate;
+        if (saved.vo2Max != null) vo2MaxInput.value = saved.vo2Max;
+        if (saved.minActiveBpm != null) minActiveBpmInput.value = saved.minActiveBpm;
+        if (saved.minValidBpm != null) minValidBpmInput.value = saved.minValidBpm;
+        if (saved.maxValidBpm != null) maxValidBpmInput.value = saved.maxValidBpm;
+        if (saved.correctionFactor != null) correctionFactorInput.value = saved.correctionFactor;
+        if (saved.subtractRestingCalories != null) subtractRestingInput.checked = saved.subtractRestingCalories;
       }
 
       function saveSettings() {
@@ -236,12 +535,46 @@
         activeTimeEl.style.color = done ? "#31e981" : "rgba(255,255,255,0.85)";
       }
 
+      function updateCaloriesDisplay() {
+        caloriesEl.textContent = `Kalori: ${dailyCalories.toFixed(2)} kcal`;
+      }
+
       setInterval(() => {
         checkDateChange();
         if (currentBpm !== null && currentBpm >= getSettings().minBpm) {
           activeSeconds++;
           localStorage.setItem(`hrm-daily-${today}`, activeSeconds);
           updateActiveTimeDisplay();
+        }
+
+        // Kalori hesaplaması
+        if (currentBpm !== null && currentBpm > 0) {
+          try {
+            const settings = getSettings();
+            const caloriePerSecond = calculateNetCaloriesPerSecond({
+              sex: settings.sex,
+              age: settings.age,
+              weightKg: settings.weightKg,
+              heightCm: settings.heightCm,
+              bpm: currentBpm,
+              restingBpm: settings.restingBpm,
+              maxHeartRate: settings.maxHeartRate,
+              vo2Max: settings.vo2Max,
+              minActiveBpm: settings.minActiveBpm,
+              minValidBpm: settings.minValidBpm,
+              maxValidBpm: settings.maxValidBpm,
+              correctionFactor: settings.correctionFactor,
+              subtractRestingCalories: settings.subtractRestingCalories,
+            });
+
+            if (caloriePerSecond > 0) {
+              dailyCalories += caloriePerSecond;
+              localStorage.setItem(`hrm-daily-calories-${today}`, dailyCalories);
+              updateCaloriesDisplay();
+            }
+          } catch (err) {
+            // Hatalı parametre, sessiz geç
+          }
         }
       }, 1000);
 
@@ -281,7 +614,21 @@
             alertVolume: settings.alertVolume,
             heartbeatVolume: settings.heartbeatVolume,
             dailyGoal: settings.dailyGoal,
+            dailyCalories: dailyCalories,
             activeSeconds,
+            // Kalori parametreleri
+            sex: settings.sex,
+            age: settings.age,
+            weightKg: settings.weightKg,
+            heightCm: settings.heightCm,
+            restingBpm: settings.restingBpm,
+            maxHeartRate: settings.maxHeartRate,
+            vo2Max: settings.vo2Max,
+            minActiveBpm: settings.minActiveBpm,
+            minValidBpm: settings.minValidBpm,
+            maxValidBpm: settings.maxValidBpm,
+            correctionFactor: settings.correctionFactor,
+            subtractRestingCalories: settings.subtractRestingCalories,
             ...extra,
             timestamp: Date.now(),
           }),
@@ -494,8 +841,47 @@
         updateActiveTimeDisplay();
       });
 
+      // Kalori parametreleri input event listeners
+      sexInput.addEventListener("change", () => {
+        saveSettings();
+      });
+      ageInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      weightKgInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      heightCmInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      restingBpmInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      maxHeartRateInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      vo2MaxInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      minActiveBpmInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      minValidBpmInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      maxValidBpmInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      correctionFactorInput.addEventListener("input", () => {
+        saveSettings();
+      });
+      subtractRestingInput.addEventListener("change", () => {
+        saveSettings();
+      });
+
       loadSettings();
       updateActiveTimeDisplay();
+      updateCaloriesDisplay();
       connectRelay();
 
       // Daha önce izin verilmiş cihaz varsa sayfa açıldığında bağlanmayı deneyebilir.
