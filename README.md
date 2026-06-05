@@ -76,159 +76,50 @@ cd hrm-obs
 npm install
 ```
 
-### ▶️ Windows Başlangıç Rehberi
-
-**En Kolay Yol (Önerilen):**
+### ▶️ Windows Başlangıç
 
 1. Proje klasörüne git
 2. `start.bat` dosyasına çift tıkla
-3. Otomatik olarak:
-   - Node.js bağımlılıkları yüklenecek (ilk çalıştırmada)
-   - WebSocket sunucusu başlayacak
-   - Controller arayüzü Chrome/Edge'de açılacak
+3. Bitti! Otomatik olarak her şey başlayacak
 
-**Manuel Başlangıç:**
+### 🍎 macOS Başlangıç
 
-```cmd
-cd hrm-obs
-node server.js
-```
-
-Sonra tarayıcıda şu adresleri aç:
-- Controller: `file:///C:/Users/<KullanıcıAdı>/Desktop/hrm-belt/hrm-obs/controller.html`
-- OBS Overlay: `file:///C:/Users/<KullanıcıAdı>/Desktop/hrm-belt/hrm-obs/overlay.html`
-
-### 🍎 macOS Başlangıç Rehberi
-
-1. Terminal'i aç (Spotlight ile: `Cmd + Space` → "Terminal")
-
-2. Proje klasörüne git:
 ```bash
 cd ~/Desktop/hrm-belt
-```
-
-3. Başlangıç scriptini çalıştır:
-```bash
-chmod +x start.sh
 ./start.sh
 ```
 
-4. Script otomatik olarak:
-   - Bağımlılıkları kontrol edip yükleyecek
-   - WebSocket sunucusunu başlatacak
-   - Safari veya Chrome'da controller açacak
+Bitti! Script otomatik olarak her şeyi yapacak.
 
-**Alternatif (Homebrew ile Node.js):**
+### 🐧 Linux Başlangıç
 
-Node.js yüklü değilse:
-```bash
-brew install node
-```
-
-### 🐧 Linux Başlangıç Rehberi
-
-**Ubuntu/Debian:**
-
-1. Node.js yükle (eğer yüklü değilse):
-```bash
-sudo apt update
-sudo apt install nodejs npm
-```
-
-2. Proje klasörüne git:
 ```bash
 cd ~/Desktop/hrm-belt
-```
-
-3. Başlangıç scriptini çalıştır:
-```bash
-chmod +x start.sh
 ./start.sh
 ```
 
-**Fedora/RHEL:**
+Bitti! Script otomatik olarak her şeyi yapacak.
 
-```bash
-sudo dnf install nodejs npm
-cd ~/Desktop/hrm-belt
-chmod +x start.sh
-./start.sh
-```
-
-**Arch:**
-
-```bash
-sudo pacman -S nodejs npm
-cd ~/Desktop/hrm-belt
-chmod +x start.sh
-./start.sh
-```
+> **Not:** Node.js yüklü değilse, paket yöneticinden yükle: `sudo apt install nodejs npm` (Ubuntu/Debian), `sudo dnf install nodejs npm` (Fedora), vb.
 
 ## Kullanım
 
-### 🎮 Controller (Kontrol Paneli) Kullanımı
+### 🎮 Controller (Kontrol Paneli)
 
-**Adım 1: Controller'ı Başlat**
-- Windows: `start.bat` çift tıkla
-- Mac/Linux: Terminal'de `./start.sh` çalıştır
-- Otomatik olarak browser'da açılacak
+1. Sunucu başlatıldıktan sonra browser otomatik açılacak
+2. "Nabız Sensörüne Bağlan" butonuna tıkla
+3. Bluetooth cihazını seç ve eşleştir
+4. BPM değeri ana ekranda gösterilecek
 
-**Adım 2: Bluetooth Sensörüne Bağlan**
-1. Kalp atış monitörünün Bluetooth'u açık olduğundan emin ol
-2. Controller arayüzündeki "Nabız Sensörüne Bağlan" butonuna tıkla
-3. Popup'ta bağlanabileceğin cihazları göreceksin
-4. Senin monitörünü seç ve "Pair" (Eşleştir) tıkla
+### 📹 OBS Overlay
 
-**Adım 3: Gerçek Zamanlı Monitörleme**
-- BPM değeri ana ekranda büyük yazıyla gösterilir
-- Alt panelde bağlantı durumu, sensör adı, aktif süre gösterilir
-- Bağlantıyı kesmek için "Bağlantıyı Kes" butonuna tıkla
-
-### 📹 OBS Overlay Entegrasyonu
-
-**OBS'te Overlay Ekle:**
-
-1. OBS'yi aç
-2. "Sources" panelinde "+" butonuna tıkla
-3. "Browser Source" seç
-4. Yeni kaynak için isim gir (örn: "HRM Overlay")
-5. Oluştur/OK
-
-**URL Ayarla (her platform için):**
-
-**Windows:**
-```
-file:///C:/Users/<KullanıcıAdı>/Desktop/hrm-belt/hrm-obs/overlay.html
-```
-
-**Mac:**
-```
-file:///Users/<KullanıcıAdı>/Desktop/hrm-belt/hrm-obs/overlay.html
-```
-
-**Linux:**
-```
-file:///home/<KullanıcıAdı>/Desktop/hrm-belt/hrm-obs/overlay.html
-```
-
-**Properties Ayarla:**
-- Width: 1500
-- Height: 875
-- Refresh browser when scene becomes active: ✓ Kapat
-- Shutdown source when not visible: ✓ Kapat
-
-**Pozisyon & Ölçek:**
-1. OBS preview'da overlay görünecek
-2. Köşelerinden sürükleyerek boyutlandır
-3. Ortasından sürükleyerek konumlandır
-4. Transparancy (saydamlık) ayarlamak için "Position and Size" kullan
-
-### 💡 İpuçları
-
-- Controller ve Overlay'ı **aynı anda** açık tutabilirsin
-- Sensörün aralıklı olarak bağlantı keserse, Bluetooth cihazı susturma modundan çıkar
-- Overlay'da "--" görüyorsan, sensör bağlantısı kontrolle
-- Best performance için OBS'i ve browser'ı farklı monitörlerde aç
+1. OBS'de: Sources → "+" → "Browser Source"
+2. Dosya yolunu gir:
+   ```
+   file:///<proje-yolu>/hrm-obs/overlay.html
+   ```
+3. Boyut: 1500×875px
+4. Konumlandır ve hazırsan yayın başla!
 
 ## Teknik Detaylar
 
@@ -254,15 +145,11 @@ hrm-belt/
 ## Hata Giderme
 
 **Port 8765 zaten kullanımda?**
+- Sunucuyu kapat (Ctrl+C) veya start scriptini kapatıp tekrar başlat
 
-- Önceki sunucuyı kapat: `start.bat` penceresini kapat veya Ctrl+C
-- Port kullanan işlemi kapat: `taskkill /PID <PID> /F`
-
-**Bluetooth cihazı algılanmıyor?**
-
-- Chrome/Edge en güncel versiyona güncelle
-- Cihazın Bluetooth'u açık olduğundan emin ol
-- Web Bluetooth API desteği için HTTPS veya localhost gerekli
+**Bluetooth cihazı bağlanmıyor?**
+- Chrome/Edge en güncel sürüme güncelle
+- Cihazın Bluetooth'u açık ve yakında olduğundan emin ol
 
 ## Lisans
 
@@ -271,6 +158,7 @@ MIT License - Melih Hakan Pektas
 Bu proje MIT Lisansı altında yayımlanmıştır. Ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
 
 **MIT Lisansı Özeti:**
+
 - ✅ Ticari kullanım
 - ✅ Değişiklik yapma
 - ✅ Dağıtma
@@ -280,7 +168,7 @@ Bu proje MIT Lisansı altında yayımlanmıştır. Ayrıntılar için [LICENSE](
 
 ## Katkıda Bulunma
 
-Projeyi geliştirmek için katkıların bekliyoruz! 
+Projeyi geliştirmek için katkıların bekliyoruz!
 
 1. Depoyu fork et
 2. Feature branch oluştur (`git checkout -b feature/YeniOzellik`)
@@ -289,6 +177,7 @@ Projeyi geliştirmek için katkıların bekliyoruz!
 5. Pull Request aç
 
 **Katkı İçin Yardım:**
+
 - Bug raporları için Issue açabilirsin
 - Önerilerin için Discussion başlatabilirsin
 - Kod review'ında yardımcı olabilirsin
