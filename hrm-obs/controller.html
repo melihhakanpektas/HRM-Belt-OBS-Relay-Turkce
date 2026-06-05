@@ -166,62 +166,132 @@
       <div id="caloriesDisplay" class="calories-display">Kalori: 0.00 kcal</div>
 
       <div class="section-title">Genel Ayarlar</div>
-      <label for="deviceNameInput" data-tooltip="Bağlanmak istediğiniz Bluetooth cihazının adı. HRM Belt model numarası ile eşleşmelidir.">Cihaz adı</label>
+      <label
+        for="deviceNameInput"
+        data-tooltip="Bağlanmak istediğiniz Bluetooth cihazının adı. HRM Belt model numarası ile eşleşmelidir."
+        >Cihaz adı</label
+      >
       <input id="deviceNameInput" value="HRM Belt 55266" />
 
-      <label for="minBpmInput" data-tooltip="Egzersiz olarak kabul edilen minimum kalp atış hızı. Bu değerin altında kaloriyle sayılmaz.">Minimum hedef BPM</label>
+      <label
+        for="minBpmInput"
+        data-tooltip="Egzersiz olarak kabul edilen minimum kalp atış hızı. Bu değerin altında kaloriyle sayılmaz."
+        >Minimum hedef BPM</label
+      >
       <input id="minBpmInput" type="number" value="100" />
 
-      <label for="maxBpmInput" data-tooltip="Güvenli egzersiz sınırı. Bu değerin üstünde uyarı verilir.">Maksimum hedef BPM</label>
+      <label
+        for="maxBpmInput"
+        data-tooltip="Güvenli egzersiz sınırı. Bu değerin üstünde uyarı verilir."
+        >Maksimum hedef BPM</label
+      >
       <input id="maxBpmInput" type="number" value="125" />
 
-      <label for="alertIntervalInput" data-tooltip="Hedef aralığının dışında kaldığında uyarı sesi kaç saniyede bir çalacağını belirler. 0 = sesiz.">Uyarı sesi sıklığı (saniye, 0 = kapalı)</label>
+      <label
+        for="alertIntervalInput"
+        data-tooltip="Hedef aralığının dışında kaldığında uyarı sesi kaç saniyede bir çalacağını belirler. 0 = sesiz."
+        >Uyarı sesi sıklığı (saniye, 0 = kapalı)</label
+      >
       <input id="alertIntervalInput" type="number" value="10" min="0" />
 
-      <label for="alertVolumeInput" data-tooltip="Uyarı sesinin ses seviyesi. 150 = 1.5x normal, 100 = normal.">Ses seviyesi (%)</label>
+      <label
+        for="alertVolumeInput"
+        data-tooltip="Uyarı sesinin ses seviyesi. 150 = 1.5x normal, 100 = normal."
+        >Ses seviyesi (%)</label
+      >
       <input id="alertVolumeInput" type="number" value="150" min="1" max="500" />
 
-      <label for="heartbeatVolumeInput" data-tooltip="Her kalp atışında çıkacak sesin ses seviyesi. 0 = sessiz.">Kalp atışı ses seviyesi (%)</label>
+      <label
+        for="heartbeatVolumeInput"
+        data-tooltip="Her kalp atışında çıkacak sesin ses seviyesi. 0 = sessiz."
+        >Kalp atışı ses seviyesi (%)</label
+      >
       <input id="heartbeatVolumeInput" type="number" value="22" min="0" max="200" />
 
-      <label for="dailyGoalInput" data-tooltip="Günlük hedeflenen aktif egzersiz süresi (dakika cinsinden). Hedef tamamlandığında renk yeşile döner.">Günlük dakika hedefi</label>
+      <label
+        for="dailyGoalInput"
+        data-tooltip="Günlük hedeflenen aktif egzersiz süresi (dakika cinsinden). Hedef tamamlandığında renk yeşile döner."
+        >Günlük dakika hedefi</label
+      >
       <input id="dailyGoalInput" type="number" value="30" min="1" />
 
       <div class="section-title">Kalori Hesaplama Parametreleri</div>
 
       <div class="param-row">
         <div>
-          <label for="sexInput" data-tooltip="Cinsiyet, kalori hesaplamasında kullanılan formülleri belirler. Erkek ve kadın metabolizması farklıdır.">Cinsiyet</label>
-          <select id="sexInput" style="width: 100%; margin-top: 6px; padding: 11px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(0, 0, 0, 0.25); color: white;">
+          <label
+            for="sexInput"
+            data-tooltip="Cinsiyet, kalori hesaplamasında kullanılan formülleri belirler. Erkek ve kadın metabolizması farklıdır."
+            >Cinsiyet</label
+          >
+          <select
+            id="sexInput"
+            style="
+              width: 100%;
+              margin-top: 6px;
+              padding: 11px 12px;
+              border-radius: 12px;
+              border: 1px solid rgba(255, 255, 255, 0.14);
+              background: rgba(0, 0, 0, 0.25);
+              color: white;
+            "
+          >
             <option value="male">Erkek</option>
             <option value="female">Kadın</option>
           </select>
         </div>
         <div>
-          <label for="ageInput" data-tooltip="Yaş, maksimum kalp atış hızı ve temel metabolik hız (BMR) hesaplamasında kullanılır.&#10;Max Nabız = 208 - (0.7 × Yaş)">Yaş</label>
+          <label
+            for="ageInput"
+            data-tooltip="Yaş, maksimum kalp atış hızı ve temel metabolik hız (BMR) hesaplamasında kullanılır.&#10;Max Nabız = 208 - (0.7 × Yaş)"
+            >Yaş</label
+          >
           <input id="ageInput" type="number" value="30" min="1" max="120" />
         </div>
       </div>
 
       <div class="param-row">
         <div>
-          <label for="weightKgInput" data-tooltip="Vücut ağırlığı (kg), enerji harcaması ve metabolik oran hesaplamasında doğrudan kullanılır.">Kilo (kg)</label>
+          <label
+            for="weightKgInput"
+            data-tooltip="Vücut ağırlığı (kg), enerji harcaması ve metabolik oran hesaplamasında doğrudan kullanılır."
+            >Kilo (kg)</label
+          >
           <input id="weightKgInput" type="number" value="75" min="10" step="0.1" />
         </div>
         <div>
-          <label for="heightCmInput" data-tooltip="Boy (cm), temel metabolik hız (BMR) hesaplamasında kullanılır.">Boy (cm)</label>
+          <label
+            for="heightCmInput"
+            data-tooltip="Boy (cm), temel metabolik hız (BMR) hesaplamasında kullanılır."
+            >Boy (cm)</label
+          >
           <input id="heightCmInput" type="number" value="180" min="50" step="0.1" />
         </div>
       </div>
 
       <div class="param-row">
         <div>
-          <label for="restingBpmInput" data-tooltip="İstirahat durumundaki kalp atış hızı (BPM).&#10;Boş bırakılırsa: Erkek=70, Kadın=75&#10;Egzersiz yoğunluğu hesaplamasının temelini oluşturur.">İstirahat Nabzı (BPM)</label>
+          <label
+            for="restingBpmInput"
+            data-tooltip="İstirahat durumundaki kalp atış hızı (BPM).&#10;Boş bırakılırsa: Erkek=70, Kadın=75&#10;Egzersiz yoğunluğu hesaplamasının temelini oluşturur."
+            >İstirahat Nabzı (BPM)</label
+          >
           <input id="restingBpmInput" type="number" value="" placeholder="Otomatik" />
         </div>
         <div>
-          <label for="correctionFactorInput" data-tooltip="Kalori hesaplamasının doğruluğunu ayarlamak için.&#10;0.90 = %90 doğruluk (tumutuv)&#10;1.00 = %100 doğruluk (tam)&#10;1.10 = %110 (yüksek tahmin)">Düzeltme Faktörü</label>
-          <input id="correctionFactorInput" type="number" value="0.90" min="0.1" max="2" step="0.05" />
+          <label
+            for="correctionFactorInput"
+            data-tooltip="Kalori hesaplamasının doğruluğunu ayarlamak için.&#10;0.90 = %90 doğruluk (tumutuv)&#10;1.00 = %100 doğruluk (tam)&#10;1.10 = %110 (yüksek tahmin)"
+            >Düzeltme Faktörü</label
+          >
+          <input
+            id="correctionFactorInput"
+            type="number"
+            value="0.90"
+            min="0.1"
+            max="2"
+            step="0.05"
+          />
         </div>
       </div>
 
@@ -251,7 +321,7 @@
         minValidBpm = 40,
         maxValidBpm = null,
 
-        correctionFactor = 0.90,
+        correctionFactor = 0.9,
         subtractRestingCalories = true,
       }) {
         if (sex !== "male" && sex !== "female") {
@@ -278,25 +348,19 @@
           throw new Error("correctionFactor must be a positive number");
         }
 
-        const estimatedRestingBpm =
-          restingBpm ??
-          (sex === "male" ? 70 : 75);
+        const estimatedRestingBpm = restingBpm ?? (sex === "male" ? 70 : 75);
 
         if (!Number.isFinite(estimatedRestingBpm) || estimatedRestingBpm <= 0) {
           throw new Error("restingBpm must be a positive number");
         }
 
-        const estimatedMaxHeartRate =
-          maxHeartRate ??
-          (208 - (0.7 * age));
+        const estimatedMaxHeartRate = maxHeartRate ?? 208 - 0.7 * age;
 
         if (!Number.isFinite(estimatedMaxHeartRate) || estimatedMaxHeartRate <= 0) {
           throw new Error("maxHeartRate must be a positive number");
         }
 
-        const upperValidBpm =
-          maxValidBpm ??
-          Math.min(220, estimatedMaxHeartRate + 15);
+        const upperValidBpm = maxValidBpm ?? Math.min(220, estimatedMaxHeartRate + 15);
 
         if (!Number.isFinite(upperValidBpm) || upperValidBpm <= 0) {
           throw new Error("maxValidBpm must be a positive number");
@@ -316,44 +380,27 @@
           return 0;
         }
 
-        const intensityByHeartRateReserve =
-          (bpm - estimatedRestingBpm) / heartRateReserve;
+        const intensityByHeartRateReserve = (bpm - estimatedRestingBpm) / heartRateReserve;
 
-        const clampedIntensity =
-          Math.max(0, Math.min(1.2, intensityByHeartRateReserve));
+        const clampedIntensity = Math.max(0, Math.min(1.2, intensityByHeartRateReserve));
 
-        const estimatedVo2Max =
-          vo2Max ??
-          (15.3 * (estimatedMaxHeartRate / estimatedRestingBpm));
+        const estimatedVo2Max = vo2Max ?? 15.3 * (estimatedMaxHeartRate / estimatedRestingBpm);
 
-        const safeVo2Max =
-          Math.max(15, Math.min(70, estimatedVo2Max));
+        const safeVo2Max = Math.max(15, Math.min(70, estimatedVo2Max));
 
         const bmr =
           sex === "male"
-            ? (10 * weightKg) + (6.25 * heightCm) - (5 * age) + 5
-            : (10 * weightKg) + (6.25 * heightCm) - (5 * age) - 161;
+            ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+            : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
 
         let grossKcalPerMinute;
 
         if (sex === "male") {
           grossKcalPerMinute =
-            (
-              -95.7735 +
-              (0.634 * bpm) +
-              (0.404 * safeVo2Max) +
-              (0.394 * weightKg) +
-              (0.271 * age)
-            ) / 4.184;
+            (-95.7735 + 0.634 * bpm + 0.404 * safeVo2Max + 0.394 * weightKg + 0.271 * age) / 4.184;
         } else {
           grossKcalPerMinute =
-            (
-              -59.3954 +
-              (0.45 * bpm) +
-              (0.380 * safeVo2Max) +
-              (0.103 * weightKg) +
-              (0.274 * age)
-            ) / 4.184;
+            (-59.3954 + 0.45 * bpm + 0.38 * safeVo2Max + 0.103 * weightKg + 0.274 * age) / 4.184;
         }
 
         if (!Number.isFinite(grossKcalPerMinute) || grossKcalPerMinute <= 0) {
@@ -377,10 +424,10 @@
           clampedIntensity < 0.25
             ? 0.85
             : clampedIntensity < 0.45
-              ? 0.90
-              : clampedIntensity < 0.70
+              ? 0.9
+              : clampedIntensity < 0.7
                 ? 0.95
-                : 1.00;
+                : 1.0;
 
         return netKcalPerSecond * correctionFactor * intensityCorrection;
       }
