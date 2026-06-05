@@ -5,12 +5,14 @@ Bluetooth Kalp Hızı (HR) Monitörü verilerini OBS'e entegre etmek için WebSo
 ## Özellikler
 
 ### 📊 Bluetooth Kalp Hızı Entegrasyonu
+
 - Web Bluetooth API kullanarak cihazla doğrudan iletişim
 - BPM (Beats Per Minute) verilerini gerçek zamanlı olarak okur
 - Kalp atış hızı değişikliklerini anında algılar
 - Bluetooth Low Energy (BLE) cihazlarıyla uyumlu
 
 ### 🎮 İnteraktif Web Controller
+
 - Modern, responsive tasarım
 - Kalp atış hızını anlık olarak görüntüler
 - Bir tuşla Bluetooth cihazına bağlan/bağlantıyı kes
@@ -19,6 +21,7 @@ Bluetooth Kalp Hızı (HR) Monitörü verilerini OBS'e entegre etmek için WebSo
 - Toplam atış sayısını hesapla
 
 ### 📹 OBS Broadcasting Overlay
+
 - 4K hazır overlay tasarımı (1500×875px)
 - Gerçek zamanlı BPM gösterimi büyük yazı ile
 - Dinamik renk değişimi: Normal (yeşil) → Düşük (mavi) → Yüksek (kırmızı)
@@ -27,6 +30,7 @@ Bluetooth Kalp Hızı (HR) Monitörü verilerini OBS'e entegre etmek için WebSo
 - Profesyonel glass morphism tasarımı
 
 ### 🔗 WebSocket Relay Mimarisi
+
 - Localhost üzerinde çalışan dedike relay sunucusu
 - Birden fazla istemci aynı anda bağlanabilir
 - Düşük latency (gecikme) ile veri iletimi
@@ -34,11 +38,13 @@ Bluetooth Kalp Hızı (HR) Monitörü verilerini OBS'e entegre etmek için WebSo
 - State persistency - son durumu sakla ve yeni bağlananlar için aktar
 
 ### 🌐 Türkçe Arayüz
+
 - Tüm UI metinleri Türkçe
 - Ülkeye özgü tasarım ve UX best practices
 - Kolay kurulum ve kullanım rehberi
 
 ### ⚡ Performans & Güvenilirlik
+
 - Minimal bağımlılık (sadece `ws` kütüphanesi)
 - Hızlı başlangıç ve başlatma
 - Otomatik error recovery
