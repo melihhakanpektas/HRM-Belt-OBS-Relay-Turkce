@@ -85,10 +85,20 @@ npm install
 ### 🍎 macOS Başlangıç
 
 1. Proje klasörüne git
-2. `start.sh` dosyasına çift tıkla
-3. Bitti! Script otomatik olarak her şeyi yapacak
+2. `start.sh` dosyasına **sağ tıkla**
+3. **Cmd + Shift + U** tuşlarına bas (Utilities klasörüne açılır)
+4. "All Applications" seçeneğini tıkla
+5. **Terminal.app** ile aç
+6. Bitti! Script otomatik olarak her şeyi yapacak
 
-Veya Terminal'de:
+Veya Terminal'de doğrudan çalıştır:
+
+```bash
+cd ~/Desktop/hrm-belt
+bash start.sh
+```
+
+Ya da executable dosya olarak:
 
 ```bash
 cd ~/Desktop/hrm-belt

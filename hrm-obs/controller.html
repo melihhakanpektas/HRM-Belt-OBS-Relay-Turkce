@@ -150,8 +150,41 @@
       let characteristic = null;
       let manualDisconnect = false;
       let reconnectTimer = null;
+      let wakeLock = null;
 
       const samples = [];
+
+      // --- Bilgisayarı uyanık tut ---
+      async function requestWakeLock() {
+        if (!navigator.wakeLock) {
+          console.log("Wake Lock API desteklenmiyor");
+          return;
+        }
+        try {
+          wakeLock = await navigator.wakeLock.request("screen");
+          console.log("Wake Lock etkinleştirildi");
+
+          wakeLock.addEventListener("release", () => {
+            console.log("Wake Lock serbest bırakıldı");
+            wakeLock = null;
+            requestWakeLock();
+          });
+        } catch (err) {
+          console.log("Wake Lock hatası:", err);
+        }
+      }
+
+      // Sayfa görünür olduğunda wake lock iste
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          if (wakeLock) wakeLock.release();
+        } else {
+          requestWakeLock();
+        }
+      });
+
+      // Başlatma
+      requestWakeLock();
 
       const bpmEl = document.getElementById("bpm");
       const statusEl = document.getElementById("status");

@@ -232,6 +232,40 @@
     <script>
       const WS_URL = "ws://localhost:8765";
 
+      let wakeLock = null;
+
+      // --- Bilgisayarı uyanık tut ---
+      async function requestWakeLock() {
+        if (!navigator.wakeLock) {
+          console.log("Wake Lock API desteklenmiyor");
+          return;
+        }
+        try {
+          wakeLock = await navigator.wakeLock.request("screen");
+          console.log("Wake Lock etkinleştirildi");
+
+          wakeLock.addEventListener("release", () => {
+            console.log("Wake Lock serbest bırakıldı");
+            wakeLock = null;
+            requestWakeLock();
+          });
+        } catch (err) {
+          console.log("Wake Lock hatası:", err);
+        }
+      }
+
+      // Sayfa görünür olduğunda wake lock iste
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          if (wakeLock) wakeLock.release();
+        } else {
+          requestWakeLock();
+        }
+      });
+
+      // Başlatma
+      requestWakeLock();
+
       const overlay = document.getElementById("overlay");
       const bpmEl = document.getElementById("bpm");
       const heartIconEl = document.getElementById("heartIcon");
@@ -279,7 +313,8 @@
         gainNode.connect(audioCtx.destination);
         oscillator.type = "sine";
         oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-        gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.005);
         gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
         oscillator.start(audioCtx.currentTime);
         oscillator.stop(audioCtx.currentTime + duration);
@@ -308,8 +343,8 @@
         osc.type = "sine";
         osc.frequency.setValueAtTime(70, t);
         osc.frequency.exponentialRampToValueAtTime(28, t + 0.12);
-        gain.gain.setValueAtTime(0.0, t);
-        gain.gain.linearRampToValueAtTime(heartbeatVolume, t + 0.008);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(heartbeatVolume, t + 0.003);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
         osc.start(t);
         osc.stop(t + 0.18);
