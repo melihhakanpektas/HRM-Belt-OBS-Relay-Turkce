@@ -187,12 +187,18 @@
         display: flex;
         align-items: baseline;
         justify-content: center;
-        gap: 30px;
+        gap: 50px;
         font-size: 65px;
         font-weight: 700;
         color: rgba(255, 255, 255, 0.5);
         border-top: 5px solid rgba(255, 255, 255, 0.1);
         padding-top: 60px;
+      }
+
+      .time-section {
+        display: flex;
+        align-items: baseline;
+        gap: 30px;
       }
 
       .time-val {
@@ -204,6 +210,30 @@
 
       .goal-reached .time-val {
         color: var(--ok);
+      }
+
+      .row-divider {
+        width: 3px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+      }
+
+      .calories-section {
+        display: flex;
+        align-items: baseline;
+        gap: 30px;
+      }
+
+      .calories-val {
+        font-size: 90px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.88);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .calories-unit {
+        font-size: 65px;
       }
     </style>
   </head>
@@ -223,9 +253,18 @@
       </div>
 
       <div class="time-row">
-        <span id="activeTime" class="time-val">00:00</span>
-        <span>/</span>
-        <span id="goalText">30 dk</span>
+        <div class="time-section">
+          <span id="activeTime" class="time-val">00:00</span>
+          <span>/</span>
+          <span id="goalText">30 dk</span>
+        </div>
+        <div class="row-divider"></div>
+        <div class="calories-section">
+          <span id="calories" class="calories-val">0</span>
+          <span>/</span>
+          <span id="calorieGoal" class="calories-val">2000</span>
+          <span class="calories-unit">kcal</span>
+        </div>
       </div>
     </div>
 
@@ -272,6 +311,8 @@
       const targetEl = document.getElementById("target");
       const activeTimeEl = document.getElementById("activeTime");
       const goalTextEl = document.getElementById("goalText");
+      const caloriesEl = document.getElementById("calories");
+      const calorieGoalEl = document.getElementById("calorieGoal");
 
       let minBpm = 100;
       let maxBpm = 125;
@@ -424,6 +465,12 @@
         if (typeof data.heartbeatVolume === "number") heartbeatVolume = data.heartbeatVolume / 100;
         if (typeof data.dailyGoal === "number") dailyGoal = data.dailyGoal;
         if (typeof data.activeSeconds === "number") activeSeconds = data.activeSeconds;
+        if (typeof data.dailyCalories === "number") {
+          caloriesEl.textContent = Math.floor(data.dailyCalories);
+        }
+        if (typeof data.dailyCalorieGoal === "number") {
+          calorieGoalEl.textContent = data.dailyCalorieGoal;
+        }
 
         targetEl.textContent = `${minBpm}–${maxBpm}`;
         activeTimeEl.textContent = formatTime(activeSeconds);

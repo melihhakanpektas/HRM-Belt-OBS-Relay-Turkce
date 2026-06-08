@@ -215,6 +215,13 @@
       >
       <input id="dailyGoalInput" type="number" value="30" min="1" />
 
+      <label
+        for="dailyCalorieGoalInput"
+        data-tooltip="Günlük hedeflenen kalori hesaplaması (kcal). Referans için takip amacına kullanılır."
+        >Günlük kalori hedefi</label
+      >
+      <input id="dailyCalorieGoalInput" type="number" value="2000" min="1" />
+
       <div class="section-title">Kalori Hesaplama Parametreleri</div>
 
       <div class="param-row">
@@ -487,6 +494,7 @@
       const alertVolumeInput = document.getElementById("alertVolumeInput");
       const heartbeatVolumeInput = document.getElementById("heartbeatVolumeInput");
       const dailyGoalInput = document.getElementById("dailyGoalInput");
+      const dailyCalorieGoalInput = document.getElementById("dailyCalorieGoalInput");
       const activeTimeEl = document.getElementById("activeTimeDisplay");
       const caloriesEl = document.getElementById("caloriesDisplay");
 
@@ -514,6 +522,7 @@
           alertVolume: Math.max(1, Number(alertVolumeInput.value)),
           heartbeatVolume: Math.max(0, Number(heartbeatVolumeInput.value)),
           dailyGoal: Math.max(1, Number(dailyGoalInput.value)),
+          dailyCalorieGoal: Math.max(1, Number(dailyCalorieGoalInput.value)),
           // Kalori parametreleri
           sex: sexInput.value,
           age: Number(ageInput.value),
@@ -567,6 +576,7 @@
         if (saved.alertVolume != null) alertVolumeInput.value = saved.alertVolume;
         if (saved.heartbeatVolume != null) heartbeatVolumeInput.value = saved.heartbeatVolume;
         if (saved.dailyGoal != null) dailyGoalInput.value = saved.dailyGoal;
+        if (saved.dailyCalorieGoal != null) dailyCalorieGoalInput.value = saved.dailyCalorieGoal;
         // Kalori parametreleri
         if (saved.sex != null) sexInput.value = saved.sex;
         if (saved.age != null) ageInput.value = saved.age;
@@ -667,6 +677,7 @@
             alertVolume: settings.alertVolume,
             heartbeatVolume: settings.heartbeatVolume,
             dailyGoal: settings.dailyGoal,
+            dailyCalorieGoal: settings.dailyCalorieGoal,
             dailyCalories: dailyCalories,
             activeSeconds,
             // Kalori parametreleri (sadece gerekli olanlar)
